@@ -56,10 +56,10 @@ def adjust_box(shape, box_array):
     x_center = (box_array[0]+box_array[1])/2
     y_center = (box_array[2]+box_array[3])/2
     width_box = box_array[1]-box_array[0]
-    height_box = box_array[3]+box_array[2]
-    x,y,w,h = x_center/shape[1], y_center/shape[0], width_box/shape[1], height_box/shape[1]
+    height_box = box_array[3]-box_array[2]
+    x,y,w,h = x_center/shape[1], y_center/shape[0], width_box/shape[1], height_box/shape[0]
     # Return the value after normalize 0-1
-    return x/shape[1],y/shape[0],w/shape[1],h/shape[0]
+    return x,y,w,h
 
 def write_label(label, label_path, id_img, bb):
     with open(os.path.join(label_path, f'{id_img}.txt'),'w') as f:
@@ -74,14 +74,16 @@ def bounding_box(label, label_path, gt_path):
             id_image = filename.split(".")[0]
 
             height, width = image.shape
-            y_coord, x_coord = np.nonzero(image)
+            # y_coord, x_coord = np.nonzero(image)
+            y_coord, x_coord = image.nonzero()
 
             x_min = x_coord.min()
             x_max = x_coord.max()
             y_min = y_coord.min()
             y_max = y_coord.max()
-
+  
             bb = adjust_box([height, width], [x_min, x_max, y_min, y_max])
+  
 
             write_label(label, label_path, id_image, bb)
 
@@ -90,7 +92,7 @@ def bounding_box(label, label_path, gt_path):
 
 def copy_file(X, split_folder, split_sub_folder):
     images_sub_folder = os.path.join(split_folder,'images', split_sub_folder)
-    label_sub_folder = os.path.join(split_folder, 'label', split_sub_folder)
+    label_sub_folder = os.path.join(split_folder, 'labels', split_sub_folder)
 
     os.makedirs(images_sub_folder, exist_ok=True)
     os.makedirs(label_sub_folder, exist_ok=True)
